@@ -1,0 +1,1 @@
+Build the project and run tests with `mvn clean install` from the root directory.

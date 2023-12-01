@@ -1,8 +1,11 @@
 package com.example.onlinelibrary.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
-import org.springframework.lang.Nullable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @ToString
 @Getter
@@ -11,13 +14,9 @@ import org.springframework.lang.Nullable;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDTO {
-    @Nullable
     private String password;
-    @Nullable
     private String email;
-    @Nullable
     private Long id;
-    @Nullable
     private String username;
 
     public UserDTO(Long id) {

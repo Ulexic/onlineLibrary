@@ -1,10 +1,8 @@
-// TODO: Test
-// TODO: Better paths
 package com.example.onlinelibrary.controller;
 
 import com.example.onlinelibrary.model.Book;
 import com.example.onlinelibrary.model.Loan;
-import com.example.onlinelibrary.model.LoanRequest;
+import com.example.onlinelibrary.model.LoanDTO;
 import com.example.onlinelibrary.service.BookService;
 import com.example.onlinelibrary.service.LoanService;
 import jakarta.ws.rs.QueryParam;
@@ -16,12 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
 @RestController()
 @RequestMapping("books")
 public class BookController {
-
-    private static final Logger log = LoggerFactory.getLogger(BookController.class);
 
     private final BookService bookService;
     private final LoanService loanService;
@@ -32,6 +27,7 @@ public class BookController {
         this.loanService = loanService;
     }
 
+    // Add a book to the database
     @PostMapping("/")
     public ResponseEntity<Book> addBook(@RequestBody Book body){
         try {
@@ -42,6 +38,7 @@ public class BookController {
         }
     }
 
+    // Get all books from the database
     @GetMapping("/")
     public ResponseEntity<List<Book>> getBooks() {
         List<Book> books = bookService.findAll();
@@ -52,6 +49,7 @@ public class BookController {
         return new ResponseEntity<>(books, HttpStatus.ACCEPTED);
     }
 
+    // Get a book by its id
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
         Book book = bookService.findById(id);
@@ -62,10 +60,11 @@ public class BookController {
         return new ResponseEntity<>(book, HttpStatus.ACCEPTED);
     }
 
+    // Get all book with specified title
     @GetMapping("/title")
     public ResponseEntity<List<Book>> getBookByTitle(@QueryParam("title") String title) {
         title = title.replace("+", " ");
-        List<Book> books = bookService.findAllByTitleIgnoreCase(title);
+        List<Book> books = bookService.findAllByTitle(title);
 
         if (books.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No books found");
@@ -73,10 +72,11 @@ public class BookController {
         return new ResponseEntity<>(books, HttpStatus.ACCEPTED);
     }
 
+    // Get all books by an author
     @GetMapping("/author")
     public ResponseEntity<List<Book>> getBookByAuthor(@QueryParam("author") String author) {
         author = author.replace("+", " ");
-        List<Book> books = bookService.findAllByAuthorIgnoreCase(author);
+        List<Book> books = bookService.findAllByAuthor(author);
 
         if (books.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No books found");
@@ -84,8 +84,9 @@ public class BookController {
         return new ResponseEntity<>(books, HttpStatus.ACCEPTED);
     }
 
+    // Add a loan to the database (borrow a book) and reduce the number of available copies
     @PostMapping("/borrow/{id}")
-    public ResponseEntity<Loan> borrowBook(@PathVariable Long id, @RequestBody LoanRequest body) {
+    public ResponseEntity<Loan> borrowBook(@PathVariable Long id, @RequestBody LoanDTO body) {
         Book book = bookService.findById(id);
         if (book == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found");
@@ -98,6 +99,7 @@ public class BookController {
         }
     }
 
+    // Get all available books
     @GetMapping("/available")
     public ResponseEntity<List<Book>> getAvailableBooks() {
         List<Book> books = bookService.findAllAvailable();

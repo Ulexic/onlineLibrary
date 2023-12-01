@@ -15,13 +15,14 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-    private final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
     private final BCryptPasswordEncoder BCrypt = new BCryptPasswordEncoder();
 
+    // The repository is injected into the constructor
     public UserServiceImpl(UserRepository repository) {
         this.repository = repository;
     }
 
+    // Check if the email is valid and if it's not already used
     private boolean checkEmail(String email) {
         List<User> user = repository.findAllByEmail(email);
         if(!user.isEmpty())
@@ -33,7 +34,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO login(UserDTO user) {
         List<User> users = repository.findAllByEmail(user.getEmail());
-        log.info(users.get(0).getPassword());
 
         if(users.isEmpty() || !BCrypt.matches(user.getPassword(), users.get(0).getPassword()))
             throw new IllegalArgumentException("Wrong credentials");
@@ -56,7 +56,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO update(UserDTO userDTO, Long id) {
-        User user = repository.getReferenceById(id);
+        User user = repository.findById(id).orElse(null);
+        if (user == null)
+            throw new IllegalArgumentException("User not found");
+
         user.setEmail(userDTO.getEmail());
         user.setUsername(userDTO.getUsername());
         user.setPassword(BCrypt.encode(userDTO.getPassword()));
@@ -67,13 +70,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO get(Long id) {
-        User user = repository.getReferenceById(id);
+        User user = repository.findById(id).orElse(null);
+        if(user == null)
+            throw new IllegalArgumentException("User not found");
         return new UserDTO(user);
     }
 
+    // TODO: correct return type??
     @Override
     public UserDTO delete(Long id) {
-        User user = repository.getReferenceById(id);
+
+        User user = repository.findById(id).orElse(null);
+        if(user == null)
+            throw new IllegalArgumentException("User not found");
         repository.delete(user);
         return new UserDTO(user);
     }

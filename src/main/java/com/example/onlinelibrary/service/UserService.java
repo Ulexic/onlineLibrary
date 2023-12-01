@@ -1,6 +1,6 @@
 package com.example.onlinelibrary.service;
 
-import com.example.onlinelibrary.model.*;
+import com.example.onlinelibrary.model.UserDTO;
 
 public interface UserService {
     UserDTO login(UserDTO user);
