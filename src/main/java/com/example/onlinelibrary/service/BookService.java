@@ -1,12 +1,17 @@
 package com.example.onlinelibrary.service;
 
 import com.example.onlinelibrary.model.Book;
+import com.example.onlinelibrary.model.LoanRequest;
 
 import java.util.List;
 
 public interface BookService {
-    public Book findByTitle(String title);
-    public Book findByAuthor(String author);
-    public List<Book> findAll();
-    public Book addBook(Book book);
+    List<Book> findAllByTitleIgnoreCase(String title);
+    List<Book> findAllByAuthorIgnoreCase(String author);
+    List<Book> findAll();
+    List<Book> findAllAvailable();
+    Book addBook(Book book);
+    Book findById(Long id);
+    void borrowBook(Book book, LoanRequest loanRequest);
+
 }
