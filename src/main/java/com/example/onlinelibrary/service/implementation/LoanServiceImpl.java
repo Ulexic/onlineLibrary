@@ -6,33 +6,41 @@ import com.example.onlinelibrary.model.LoanDTO;
 import com.example.onlinelibrary.repository.LoanRepository;
 import com.example.onlinelibrary.service.BookService;
 import com.example.onlinelibrary.service.LoanService;
+import com.example.onlinelibrary.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class LoanServiceImpl implements LoanService {
 
     private final LoanRepository repository;
     private final BookService bookService;
+    private final UserService userService;
 
     // The repositories are injected into the constructor
-    public LoanServiceImpl(LoanRepository repository, BookService bookService) {
+    public LoanServiceImpl(LoanRepository repository, BookService bookService, UserService userService) {
         this.repository = repository;
         this.bookService = bookService;
+        this.userService = userService;
     }
 
     @Override
     public Loan borrowBook(Book book, LoanDTO loanDTO) {
+        String regex = "^\\d{4}-\\d{2}-\\d{2}$";
         // The book is saved only if the publicationDate is in the format yyyy-MM-dd
-        if (!loanDTO.getReturnDate().matches("^\\d{4}-\\d{2}-\\d{2}$"))
-            throw new IllegalArgumentException("Invalid returnDate");
+        if (!loanDTO.getReturnDate().matches(regex) || !loanDTO.getLoanDate().matches(regex))
+            throw new IllegalArgumentException("Invalid date");
 
+        // Throw an error if user doesn't exist
+        userService.get(loanDTO.getUserId());
         if (book.getAvailableCopies() > 0) {
             book.setAvailableCopies(book.getAvailableCopies() - 1);
-            bookService.addBook(book);
-            List<LoanDTO> borrowedBooks = getBorrowedBooks(loanDTO.getUserId());
+            book = bookService.addBook(book);
+            loanDTO.setBookId(book.getId());
+            List<Loan> borrowedBooks = repository.findAllByUserId(loanDTO.getUserId());
 
             // A user can't borrow more than 3 books
             if(borrowedBooks.size() > 2)
@@ -46,7 +54,9 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public List<LoanDTO> getBorrowedBooks(Long userId) {
-        List<Loan> loans = repository.findAllByUserId(userId).stream().filter(loan -> loan.getUserId() == userId).toList();
+        List<Loan> loans = repository.findAllByUserId(userId).stream().filter(loan -> Objects.equals(loan.getUserId(), userId)).toList();
+        if(loans.isEmpty())
+            throw new IllegalArgumentException("Could not find loan");
         List<LoanDTO> response = new ArrayList<>();
 
         for (Loan loan : loans) {

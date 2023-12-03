@@ -4,9 +4,6 @@ import com.example.onlinelibrary.model.LoanDTO;
 import com.example.onlinelibrary.model.UserDTO;
 import com.example.onlinelibrary.service.LoanService;
 import com.example.onlinelibrary.service.UserService;
-import com.example.onlinelibrary.service.implementation.BookServiceImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +16,8 @@ import java.util.List;
 @RequestMapping("/user")
 public class UserController {
 
-    private UserService userService;
-    private LoanService loanService;
-    private static final Logger log = LoggerFactory.getLogger(BookServiceImpl.class);
+    private final UserService userService;
+    private final LoanService loanService;
 
     public UserController(UserService userService, LoanService loanService) {
         this.userService = userService;
@@ -33,9 +29,6 @@ public class UserController {
     public ResponseEntity<UserDTO> register(@RequestBody UserDTO body) {
         try {
             UserDTO user = userService.register(body);
-            if (user == null)
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User could not be created");
-
             return new ResponseEntity<>(user, HttpStatus.CREATED);
         } catch(IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -45,35 +38,56 @@ public class UserController {
     // Login a user
     @PostMapping("/login")
     public ResponseEntity<UserDTO> login(@RequestBody UserDTO userDTO) {
-        UserDTO user = userService.login(userDTO);
-        return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
+        try {
+            UserDTO user = userService.login(userDTO);
+            return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+
+        }
     }
 
     // Update a user
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> update(@RequestBody UserDTO userDTO, @PathVariable Long id) {
-        UserDTO user = userService.update(userDTO, id);
-        return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
+        try {
+            UserDTO user = userService.update(userDTO, id);
+            return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
     // Get a user information
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@PathVariable Long id) {
-        UserDTO user = userService.get(id);
-        return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
+        try {
+            UserDTO user = userService.get(id);
+            return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
     // Delete a user
     @DeleteMapping("/{id}")
-    public ResponseEntity<UserDTO> deleteUser(@PathVariable Long id) {
-        UserDTO user = userService.delete(id);
-        return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
+    public ResponseEntity<Boolean> deleteUser(@PathVariable Long id) {
+        try {
+            userService.delete(id);
+            return new ResponseEntity<>(true, HttpStatus.ACCEPTED);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
     // Get all books borrowed by a user
     @GetMapping("/{id}/borrowed")
     public ResponseEntity<List<LoanDTO>> getBorrowedBooks(@PathVariable Long id) {
-        List<LoanDTO> book = loanService.getBorrowedBooks(id);
-        return new ResponseEntity<>(book, HttpStatus.ACCEPTED);
+        try {
+            List<LoanDTO> book = loanService.getBorrowedBooks(id);
+            return new ResponseEntity<>(book, HttpStatus.ACCEPTED);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 }

@@ -46,9 +46,7 @@ public class BookServiceTest {
         bookRepository.deleteAll();
         Book book = new Book(1L, "Title", "Author test", "2021-01-01", 3);
         bookRepository.save(book);
-
-        List<Book> books = service.findAllByTitle("Test");
-        assertEquals(0, books.size());
+        assertThrows(IllegalArgumentException.class, () -> service.findAllByTitle("Test"));
     }
 
     @Test
@@ -76,9 +74,7 @@ public class BookServiceTest {
         bookRepository.deleteAll();
         Book book = new Book(1L, "Title", "Author test", "2021-01-01", 3);
         bookRepository.save(book);
-
-        List<Book> books = service.findAllByAuthor("Test");
-        assertEquals(0, books.size());
+        assertThrows(IllegalArgumentException.class, () -> service.findAllByAuthor("Test"));
     }
 
     @Test
@@ -130,7 +126,7 @@ public class BookServiceTest {
         bookRepository.deleteAll();
         Book book = new Book(1L, "Title", "Author test", "20-01-01", 3);
 
-        assertThrows(IllegalArgumentException.class, () -> { service.addBook(book); });
+        assertThrows(IllegalArgumentException.class, () -> service.addBook(book));
     }
 
     @Test
@@ -148,9 +144,8 @@ public class BookServiceTest {
         bookRepository.deleteAll();
         Book book = new Book(1L, "Title", "Author test", "2021-01-01", 3);
         book = bookRepository.save(book);
-
-        Book foundBook = service.findById(book.getId() + 1);
-        assertEquals(null, foundBook);
+        Book finalBook = book;
+        assertThrows(IllegalArgumentException.class, () -> service.findById(finalBook.getId() + 1));
     }
 
     @Test
@@ -161,7 +156,6 @@ public class BookServiceTest {
         Book book2 = new Book(2L, "Title2", "Author test2", "2021-01-01", 1);
         bookRepository.save(book2);
 
-        List<Book> test = service.findAll();
         List<Book> books = service.getBooksByIds(List.of(book1.getId(), book2.getId()));
         assertEquals(2, books.size());
     }

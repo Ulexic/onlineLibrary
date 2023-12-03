@@ -20,17 +20,28 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Book> findAllByTitle(String title) {
-        return bookRepository.findAllByTitleIgnoreCase(title);
+        List<Book> books = bookRepository.findAllByTitleIgnoreCase(title);
+        if(books.isEmpty())
+            throw new IllegalArgumentException("No book found");
+
+        return books;
     }
 
     @Override
     public List<Book> findAllByAuthor(String author) {
-        return bookRepository.findAllByAuthorIgnoreCase(author);
+        List<Book> books = bookRepository.findAllByAuthorIgnoreCase(author);
+        if(books.isEmpty())
+            throw new IllegalArgumentException("No book found");
+
+        return books;
     }
 
     @Override
     public List<Book> findAll() {
-        return bookRepository.findAll();
+        List<Book> books = bookRepository.findAll();
+        if(books.isEmpty())
+            throw new IllegalArgumentException("No book found");
+        return books;
     }
 
     @Override
@@ -44,14 +55,18 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book findById(Long id) {
-        return bookRepository.findById(id).orElse(null);
+        Book book = bookRepository.findById(id).orElse(null);
+        if (book == null)
+            throw new IllegalArgumentException("No book found");
+        return book;
     }
 
     @Override
     public List<Book> findAllAvailable() {
         List<Book> books = bookRepository.findAll();
-
         books = books.stream().filter(book -> book.getAvailableCopies() > 0).collect(Collectors.toList());
+        if (books.isEmpty())
+            throw new IllegalArgumentException("No book found");
         return books;
     }
 

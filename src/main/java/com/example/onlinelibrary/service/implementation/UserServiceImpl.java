@@ -3,9 +3,6 @@ package com.example.onlinelibrary.service.implementation;
 import com.example.onlinelibrary.model.*;
 import com.example.onlinelibrary.repository.UserRepository;
 import com.example.onlinelibrary.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +47,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
         user.setPassword(BCrypt.encode(request.getPassword()));
-        repository.save(user);
+        user = repository.save(user);
         return new UserDTO(user);
     }
 
@@ -76,14 +73,12 @@ public class UserServiceImpl implements UserService {
         return new UserDTO(user);
     }
 
-    // TODO: correct return type??
     @Override
-    public UserDTO delete(Long id) {
+    public void delete(Long id) {
 
         User user = repository.findById(id).orElse(null);
         if(user == null)
             throw new IllegalArgumentException("User not found");
         repository.delete(user);
-        return new UserDTO(user);
     }
 }

@@ -7,5 +7,5 @@ public interface UserService {
     UserDTO register(UserDTO user);
     UserDTO update(UserDTO user, Long id);
     UserDTO get(Long id);
-    UserDTO delete(Long id);
+    void delete(Long id);
 }
